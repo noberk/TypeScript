@@ -22,7 +22,7 @@ f1(42, ...t2);
 f1(42, "hello", ...t1);
 f1(42, "hello", true, ...t0);
 f1(ns[0], ns[1], true);
-f1(...ns, true);  // Error, tuple spread only expanded when last
+f1(...ns, true);  // FIXME: Error, since ...ns is considered as string|number here
 
 f2(42, "hello", true);
 f2(t3[0], t3[1], t3[2]);
@@ -31,7 +31,7 @@ f2(42, ...t2);
 f2(42, "hello", ...t1);
 f2(42, "hello", true, ...t0);
 f2(ns[0], ns[1], true);
-f2(...ns, true);  // Error, tuple spread only expanded when last
+f2(...ns, true);  // FIXME: Error, since ...ns is considered as string|number here
 
 declare function f10<T extends unknown[]>(...args: T): T;
 
@@ -127,16 +127,14 @@ declare function f30<T, U extends ((x: T) => any)[]>(x: T, ...args: U): U;
 
 const c30 = f30(42, x => "" + x, x => x + 1);  // [(x: number) => string, (x: number) => number]
 
-type Parameters<T extends Function> = T extends ((...args: infer U) => any) | (new(...args: infer U) => any) ? U : any[];
-
 type T01 = Parameters<(x: number, y: string, z: boolean) => void>;
 type T02 = Parameters<(...args: [number, string, boolean]) => void>;
-type T03 = Parameters<new (x: number, y: string, z: boolean) => void>;
-type T04 = Parameters<new (...args: [number, string, boolean]) => void>;
+type T03 = ConstructorParameters<new (x: number, y: string, z: boolean) => void>;
+type T04 = ConstructorParameters<new (...args: [number, string, boolean]) => void>;
 type T05<T> = Parameters<(...args: T[]) => void>;
-type T06<T> = Parameters<new (...args: []) => void>;
+type T06<T> = ConstructorParameters<new (...args: []) => void>;
 type T07<T extends any[]> = Parameters<(...args: T) => void>;
-type T08<T extends any[]> = Parameters<new (...args: T) => void>;
+type T08<T extends any[]> = ConstructorParameters<new (...args: T) => void>;
 type T09 = Parameters<Function>;
 
 type Record1 = {
@@ -155,3 +153,15 @@ events.emit('move', 10, 'left');
 events.emit('jump', 20, 'up');
 events.emit('stop', 'Bye!');
 events.emit('done');
+
+// Repro from #25871
+
+declare var ff1: (... args: any[]) => void;
+
+declare var ff2: () => void;
+declare var ff3: (...args: []) => void;
+declare var ff4: (a: never) => void;
+
+ff1 = ff2;
+ff1 = ff3;
+ff1 = ff4;  // Error

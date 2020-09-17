@@ -227,9 +227,9 @@
 
 verify.quickInfos({
     1: ["function f1(a: number): number (+1 overload)", "this is signature 1"],
-    2: "function f1(b: string): number (+1 overload)",
+    2: ["function f1(b: string): number (+1 overload)", "this is signature 1"],
     3: ["function f1(a: number): number (+1 overload)", "this is signature 1"],
-    "4q": "function f1(b: string): number (+1 overload)",
+    "4q": ["function f1(b: string): number (+1 overload)", "this is signature 1"],
     o4q: ["function f1(a: number): number (+1 overload)", "this is signature 1"]
 });
 
@@ -241,7 +241,7 @@ verify.quickInfos({
     6: ["function f2(b: string): number (+1 overload)", "this is signature 2"],
     7: "function f2(a: number): number (+1 overload)",
     "8q": ["function f2(b: string): number (+1 overload)", "this is signature 2"],
-    o8q: "function f2(a: number): number (+1 overload)"
+    o8q: "function f2(a: number): number (+1 overload)",
 });
 
 verify.signatureHelp(
@@ -272,24 +272,30 @@ verify.signatureHelp(
     { marker: "o16", overloadsCount: 2, docComment: "this is signature 4 - with number parameter", parameterDocComment: "param a" },
 );
 
-goTo.marker('17');
-verify.completionListContains('f1', 'function f1(a: number): number (+1 overload)', 'this is signature 1');
-verify.completionListContains('f2', 'function f2(a: number): number (+1 overload)', '');
-verify.completionListContains('f3', 'function f3(a: number): number (+1 overload)', '');
-verify.completionListContains('f4', 'function f4(a: number): number (+1 overload)', 'this is signature 4 - with number parameter');
-
-goTo.marker('18');
-verify.not.completionListContains('i1', 'interface i1', '');
-verify.completionListContains('i1_i', 'var i1_i: i1\nnew (b: number) => any (+1 overload)', '');
-verify.not.completionListContains('i2', 'interface i2', '');
-verify.completionListContains('i2_i', 'var i2_i: i2\nnew (a: string) => any (+1 overload)', '');
-verify.not.completionListContains('i3', 'interface i3', '');
-verify.completionListContains('i3_i', 'var i3_i: i3\nnew (a: string) => any (+1 overload)', 'new 1');
-verify.not.completionListContains('i4', 'interface i4', '');
-verify.completionListContains('i4_i', 'var i4_i: i4\nnew (a: string) => any (+1 overload)', '');
+verify.completions(
+    {
+        marker: "17",
+        includes: [
+            { name: "f1", text: "function f1(a: number): number (+1 overload)", documentation: "this is signature 1" },
+            { name: "f2", text: "function f2(a: number): number (+1 overload)" },
+            { name: "f3", text: "function f3(a: number): number (+1 overload)" },
+            { name: "f4", text: "function f4(a: number): number (+1 overload)", documentation: "this is signature 4 - with number parameter" },
+        ],
+    },
+    {
+        marker: "18",
+        includes: [
+            { name: "i1_i", text: "var i1_i: i1\nnew (b: number) => any (+1 overload)", documentation: "new 1" },
+            { name: "i2_i", text: "var i2_i: i2\nnew (a: string) => any (+1 overload)" },
+            { name: "i3_i", text: "var i3_i: i3\nnew (a: string) => any (+1 overload)", documentation: "new 1" },
+            { name: "i4_i", text: "var i4_i: i4\nnew (a: string) => any (+1 overload)" },
+        ],
+        excludes: ["i1", "i2", "i3", "i4"],
+    },
+);
 
 verify.signatureHelp({ marker: "19", overloadsCount: 2 });
-verify.quickInfoAt("19q", "var i1_i: i1\nnew (b: number) => any (+1 overload)");
+verify.quickInfoAt("19q", "var i1_i: i1\nnew (b: number) => any (+1 overload)", "new 1");
 
 verify.signatureHelp({ marker: "20", overloadsCount: 2, docComment: "new 1" });
 verify.quickInfoAt("20q", "var i1_i: i1\nnew (a: string) => any (+1 overload)", "new 1");
@@ -301,11 +307,15 @@ verify.signatureHelp({ marker: "22", overloadsCount: 2, docComment: "this is sig
 goTo.marker('22q');
 verify.quickInfoAt("22q", "var i1_i: i1\n(b: string) => number (+1 overload)", "this is signature 2");
 
-goTo.marker('23');
-verify.completionListContains('foo', '(method) i1.foo(a: number): number (+1 overload)', 'foo 1');
-verify.completionListContains('foo2', '(method) i1.foo2(a: number): number (+1 overload)', '');
-verify.completionListContains('foo3', '(method) i1.foo3(a: number): number (+1 overload)', '');
-verify.completionListContains('foo4', '(method) i1.foo4(a: number): number (+1 overload)', 'foo4 1');
+verify.completions({
+    marker: "23",
+    includes: [
+        { name: "foo" , text: "(method) i1.foo(a: number): number (+1 overload)", documentation: "foo 1" },
+        { name: "foo2", text: "(method) i1.foo2(a: number): number (+1 overload)" },
+        { name: "foo3", text: "(method) i1.foo3(a: number): number (+1 overload)" },
+        { name: "foo4", text: "(method) i1.foo4(a: number): number (+1 overload)", documentation: "foo4 1" },
+    ],
+});
 
 verify.signatureHelp({ marker: "24", overloadsCount: 2, docComment: "foo 1" });
 verify.quickInfoAt("24q", "(method) i1.foo(a: number): number (+1 overload)", "foo 1");
@@ -329,7 +339,7 @@ verify.signatureHelp({ marker: "30", overloadsCount: 2, docComment: "foo4 1" });
 verify.quickInfoAt("30q", "(method) i1.foo4(a: number): number (+1 overload)", "foo4 1");
 
 verify.signatureHelp({ marker: "31", overloadsCount: 2 });
-verify.quickInfoAt("31q", "(method) i1.foo4(b: string): number (+1 overload)");
+verify.quickInfoAt("31q", "(method) i1.foo4(b: string): number (+1 overload)", "foo4 1");
 
 verify.signatureHelp({ marker: "32", overloadsCount: 2, docComment: "new 2" });
 verify.quickInfoAt("32q", "var i2_i: i2\nnew (b: number) => any (+1 overload)", "new 2");
@@ -353,7 +363,7 @@ verify.signatureHelp({ marker: "38", overloadsCount: 2, docComment: "this is sig
 verify.quickInfoAt("38q", "var i3_i: i3\n(a: number) => number (+1 overload)", "this is signature 1");
 
 verify.signatureHelp({ marker: "39", overloadsCount: 2 });
-verify.quickInfoAt("39q", "var i3_i: i3\n(b: string) => number (+1 overload)");
+verify.quickInfoAt("39q", "var i3_i: i3\n(b: string) => number (+1 overload)", "this is signature 1");
 
 verify.signatureHelp({ marker: "40", overloadsCount: 2 });
 verify.quickInfoAt("40q", "var i4_i: i4\nnew (b: number) => any (+1 overload)");
@@ -367,12 +377,16 @@ verify.quickInfoAt("42q", "var i4_i: i4\n(a: number) => number (+1 overload)");
 verify.signatureHelp({ marker: "43", overloadsCount: 2 });
 verify.quickInfoAt("43q", "var i4_i: i4\n(b: string) => number (+1 overload)");
 
-goTo.marker('44');
-verify.completionListContains('prop1', '(method) c.prop1(a: number): number (+1 overload)', '');
-verify.completionListContains('prop2', '(method) c.prop2(a: number): number (+1 overload)', 'prop2 1');
-verify.completionListContains('prop3', '(method) c.prop3(a: number): number (+1 overload)', '');
-verify.completionListContains('prop4', '(method) c.prop4(a: number): number (+1 overload)', 'prop4 1');
-verify.completionListContains('prop5', '(method) c.prop5(a: number): number (+1 overload)', 'prop5 1');
+verify.completions({
+    marker: "44",
+    exact: [
+        { name: "prop1", text: "(method) c.prop1(a: number): number (+1 overload)" },
+        { name: "prop2", text: "(method) c.prop2(a: number): number (+1 overload)", documentation: "prop2 1" },
+        { name: "prop3", text: "(method) c.prop3(a: number): number (+1 overload)" },
+        { name: "prop4", text: "(method) c.prop4(a: number): number (+1 overload)", documentation: "prop4 1" },
+        { name: "prop5", text: "(method) c.prop5(a: number): number (+1 overload)", documentation: "prop5 1" },
+    ],
+});
 
 verify.signatureHelp({ marker: "45", overloadsCount: 2 });
 verify.quickInfoAt("45q", "(method) c.prop1(a: number): number (+1 overload)");
@@ -384,7 +398,7 @@ verify.signatureHelp({ marker: "47", overloadsCount: 2, docComment: "prop2 1" })
 verify.quickInfoAt("47q", "(method) c.prop2(a: number): number (+1 overload)", "prop2 1");
 
 verify.signatureHelp({ marker: "48", overloadsCount: 2 });
-verify.quickInfoAt("48q", "(method) c.prop2(b: string): number (+1 overload)");
+verify.quickInfoAt("48q", "(method) c.prop2(b: string): number (+1 overload)", "prop2 1");
 
 verify.signatureHelp({ marker: "49", overloadsCount: 2 });
 verify.quickInfoAt("49q", "(method) c.prop3(a: number): number (+1 overload)");
@@ -414,7 +428,7 @@ verify.signatureHelp({ marker: "57", overloadsCount: 2, docComment: "c2 1" });
 verify.quickInfoAt("57q", "constructor c2(a: number): c2 (+1 overload)", "c2 1");
 
 verify.signatureHelp({ marker: "58", overloadsCount: 2 });
-verify.quickInfoAt("58q", "constructor c2(b: string): c2 (+1 overload)");
+verify.quickInfoAt("58q", "constructor c2(b: string): c2 (+1 overload)", "c2 1");
 
 verify.signatureHelp({ marker: "59", overloadsCount: 2 });
 verify.quickInfoAt("59q", "constructor c3(a: number): c3 (+1 overload)");
@@ -434,26 +448,30 @@ verify.quickInfoAt("63q", "constructor c5(a: number): c5 (+1 overload)", "c5 1")
 verify.signatureHelp({ marker: "64", overloadsCount: 2, docComment: "c5 2" });
 verify.quickInfoAt("64q", "constructor c5(b: string): c5 (+1 overload)", "c5 2");
 
-goTo.marker('65');
-verify.completionListContains("c", "class c", "");
-verify.completionListContains("c1", "class c1", "");
-verify.completionListContains("c2", "class c2", "");
-verify.completionListContains("c3", "class c3", "");
-verify.completionListContains("c4", "class c4", "");
-verify.completionListContains("c5", "class c5", "");
-verify.completionListContains("c_i", "var c_i: c", "");
-verify.completionListContains("c1_i_1", "var c1_i_1: c1", "");
-verify.completionListContains("c2_i_1", "var c2_i_1: c2", "");
-verify.completionListContains("c3_i_1", "var c3_i_1: c3", "");
-verify.completionListContains("c4_i_1", "var c4_i_1: c4", "");
-verify.completionListContains("c5_i_1", "var c5_i_1: c5", "");
-verify.completionListContains("c1_i_2", "var c1_i_2: c1", "");
-verify.completionListContains("c2_i_2", "var c2_i_2: c2", "");
-verify.completionListContains("c3_i_2", "var c3_i_2: c3", "");
-verify.completionListContains("c4_i_2", "var c4_i_2: c4", "");
-verify.completionListContains("c5_i_2", "var c5_i_2: c5", "");
-verify.completionListContains('multiOverload', 'function multiOverload(a: number): string (+2 overloads)', 'This is multiOverload F1 1');
-verify.completionListContains('ambientF1', 'function ambientF1(a: number): string (+2 overloads)', 'This is ambient F1 1');
+verify.completions({
+    marker: "65",
+    includes: [
+        { name: "c", text: "class c" },
+        { name: "c1", text: "class c1" },
+        { name: "c2", text: "class c2" },
+        { name: "c3", text: "class c3" },
+        { name: "c4", text: "class c4" },
+        { name: "c5", text: "class c5" },
+        { name: "c_i", text: "var c_i: c" },
+        { name: "c1_i_1", text: "var c1_i_1: c1" },
+        { name: "c2_i_1", text: "var c2_i_1: c2" },
+        { name: "c3_i_1", text: "var c3_i_1: c3" },
+        { name: "c4_i_1", text: "var c4_i_1: c4" },
+        { name: "c5_i_1", text: "var c5_i_1: c5" },
+        { name: "c1_i_2", text: "var c1_i_2: c1" },
+        { name: "c2_i_2", text: "var c2_i_2: c2" },
+        { name: "c3_i_2", text: "var c3_i_2: c3" },
+        { name: "c4_i_2", text: "var c4_i_2: c4" },
+        { name: "c5_i_2", text: "var c5_i_2: c5" },
+        { name: "multiOverload", text: "function multiOverload(a: number): string (+2 overloads)", documentation: "This is multiOverload F1 1" },
+        { name: "ambientF1", text: "function ambientF1(a: number): string (+2 overloads)", documentation: "This is ambient F1 1" },
+    ],
+});
 
 verify.quickInfos({
     66: "var c1_i_1: c1",
@@ -472,7 +490,7 @@ verify.quickInfos({
     79: "constructor c1(b: string): c1 (+1 overload)",
     80: "constructor c1(a: number): c1 (+1 overload)",
     81: ["constructor c2(a: number): c2 (+1 overload)", "c2 1"],
-    82: "constructor c2(b: string): c2 (+1 overload)",
+    82: ["constructor c2(b: string): c2 (+1 overload)", "c2 1"],
     83: ["constructor c2(a: number): c2 (+1 overload)", "c2 1"],
     84: "constructor c3(a: number): c3 (+1 overload)",
     85: ["constructor c3(b: string): c3 (+1 overload)", "c3 2"],
@@ -487,7 +505,7 @@ verify.quickInfos({
     94: "(method) c.prop1(b: string): number (+1 overload)",
     95: "(method) c.prop1(a: number): number (+1 overload)",
     96: ["(method) c.prop2(a: number): number (+1 overload)", "prop2 1"],
-    97: "(method) c.prop2(b: string): number (+1 overload)",
+    97: ["(method) c.prop2(b: string): number (+1 overload)", "prop2 1"],
     98: ["(method) c.prop2(a: number): number (+1 overload)", "prop2 1"],
     99: "(method) c.prop3(a: number): number (+1 overload)",
     100: ["(method) c.prop3(b: string): number (+1 overload)", "prop3 2"],

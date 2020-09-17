@@ -37,6 +37,22 @@ x();
 >x() : any
 >x : number
 
+/* @ts-ignore */
+/*another comment
+ that could be multiline*/
+
+x();
+>x() : any
+>x : number
+
+/* @ts-ignore
+continuing comment
+ that could be multiline*/
+
+x();
+>x() : any
+>x : number
+
 
 
 // @ts-ignore: no call signature

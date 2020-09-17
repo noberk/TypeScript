@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "outFile": "../built/local/lib.js",
+        "composite": true,
+        "declarationMap": true,
+        "bundledPackageName": "lib"
+    },
+    "references": [],
+    "files": [
+        "index.ts"
+    ]
+}

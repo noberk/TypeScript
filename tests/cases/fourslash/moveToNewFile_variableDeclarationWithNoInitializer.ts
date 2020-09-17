@@ -14,6 +14,8 @@ export let x;
 
         "/y.ts":
 `import { x } from "./a";
-const y = x;`,
+
+const y = x;
+`,
     },
 });

@@ -1,8 +1,10 @@
 {
     "compilerOptions": {
         "pretty": true,
-        "lib": ["es2015"],
+        "lib": ["es2015.iterable", "es2015.generator", "es5"],
         "target": "es5",
+        "moduleResolution": "classic",
+        "rootDir": ".",
 
         "declaration": true,
         "declarationMap": true,
@@ -13,6 +15,7 @@
         "strictNullChecks": true,
         "noImplicitAny": true,
         "noImplicitThis": true,
+        "strictPropertyInitialization": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
 

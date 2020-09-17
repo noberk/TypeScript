@@ -1,7 +1,7 @@
 === tests/cases/conformance/salsa/a.js ===
 var Outer = {};
 >Outer : typeof Outer
->{} : { [x: string]: any; }
+>{} : {}
 
 Outer.Inner = class {
 >Outer.Inner = class {    constructor() {        this.x = 1    }    m() { }} : typeof Inner
@@ -13,9 +13,9 @@ Outer.Inner = class {
     constructor() {
         this.x = 1
 >this.x = 1 : 1
->this.x : number
+>this.x : any
 >this : this
->x : number
+>x : any
 >1 : 1
     }
     m() { }

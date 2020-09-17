@@ -8,7 +8,7 @@ namespace ts.NavigateTo {
         readonly declaration: Declaration;
     }
 
-    export function getNavigateToItems(sourceFiles: ReadonlyArray<SourceFile>, checker: TypeChecker, cancellationToken: CancellationToken, searchValue: string, maxResultCount: number | undefined, excludeDtsFiles: boolean): NavigateToItem[] {
+    export function getNavigateToItems(sourceFiles: readonly SourceFile[], checker: TypeChecker, cancellationToken: CancellationToken, searchValue: string, maxResultCount: number | undefined, excludeDtsFiles: boolean): NavigateToItem[] {
         const patternMatcher = createPatternMatcher(searchValue);
         if (!patternMatcher) return emptyArray;
         const rawItems: RawNavigateToItem[] = [];
@@ -30,7 +30,7 @@ namespace ts.NavigateTo {
         return (maxResultCount === undefined ? rawItems : rawItems.slice(0, maxResultCount)).map(createNavigateToItem);
     }
 
-    function getItemsFromNamedDeclaration(patternMatcher: PatternMatcher, name: string, declarations: ReadonlyArray<Declaration>, checker: TypeChecker, fileName: string, rawItems: Push<RawNavigateToItem>): void {
+    function getItemsFromNamedDeclaration(patternMatcher: PatternMatcher, name: string, declarations: readonly Declaration[], checker: TypeChecker, fileName: string, rawItems: Push<RawNavigateToItem>): void {
         // First do a quick check to see if the name of the declaration matches the
         // last portion of the (possibly) dotted name they're searching for.
         const match = patternMatcher.getMatchForLastSegmentOfPattern(name);
@@ -67,52 +67,34 @@ namespace ts.NavigateTo {
         }
     }
 
-    function tryAddSingleDeclarationName(declaration: Declaration, containers: string[]): boolean {
+    function tryAddSingleDeclarationName(declaration: Declaration, containers: Push<string>): boolean {
         const name = getNameOfDeclaration(declaration);
-        if (name && isPropertyNameLiteral(name)) {
-            containers.unshift(getTextOfIdentifierOrLiteral(name));
-            return true;
-        }
-        else if (name && name.kind === SyntaxKind.ComputedPropertyName) {
-            return tryAddComputedPropertyName(name.expression, containers, /*includeLastPortion*/ true);
-        }
-        else {
-            // Don't know how to add this.
-            return false;
-        }
+        return !!name && (pushLiteral(name, containers) || name.kind === SyntaxKind.ComputedPropertyName && tryAddComputedPropertyName(name.expression, containers));
     }
 
     // Only added the names of computed properties if they're simple dotted expressions, like:
     //
     //      [X.Y.Z]() { }
-    function tryAddComputedPropertyName(expression: Expression, containers: string[], includeLastPortion: boolean): boolean {
-        if (isPropertyNameLiteral(expression)) {
-            const text = getTextOfIdentifierOrLiteral(expression);
-            if (includeLastPortion) {
-                containers.unshift(text);
-            }
-            return true;
-        }
-        if (isPropertyAccessExpression(expression)) {
-            if (includeLastPortion) {
-                containers.unshift(expression.name.text);
-            }
-
-            return tryAddComputedPropertyName(expression.expression, containers, /*includeLastPortion*/ true);
-        }
-
-        return false;
+    function tryAddComputedPropertyName(expression: Expression, containers: Push<string>): boolean {
+        return pushLiteral(expression, containers)
+            || isPropertyAccessExpression(expression) && (containers.push(expression.name.text), true) && tryAddComputedPropertyName(expression.expression, containers);
     }
 
-    function getContainers(declaration: Declaration): ReadonlyArray<string> {
+    function pushLiteral(node: Node, containers: Push<string>): boolean {
+        return isPropertyNameLiteral(node) && (containers.push(getTextOfIdentifierOrLiteral(node)), true);
+    }
+
+    function getContainers(declaration: Declaration): readonly string[] {
         const containers: string[] = [];
 
         // First, if we started with a computed property name, then add all but the last
         // portion into the container array.
         const name = getNameOfDeclaration(declaration);
-        if (name && name.kind === SyntaxKind.ComputedPropertyName && !tryAddComputedPropertyName(name.expression, containers, /*includeLastPortion*/ false)) {
+        if (name && name.kind === SyntaxKind.ComputedPropertyName && !tryAddComputedPropertyName(name.expression, containers)) {
             return emptyArray;
         }
+        // Don't include the last portion.
+        containers.shift();
 
         // Now, walk up our containers, adding all their names to the container array.
         let container = getContainerNode(declaration);
@@ -125,7 +107,7 @@ namespace ts.NavigateTo {
             container = getContainerNode(container);
         }
 
-        return containers;
+        return containers.reverse();
     }
 
     function compareNavigateToItems(i1: RawNavigateToItem, i2: RawNavigateToItem) {

@@ -31,16 +31,35 @@
 ////takesCb((x, y) => { x; });
 ////takesCb((x, y) => { y; });
 ////
+////function fn1(x: number, y: string): void {}
+////takesCb(fn1);
+////
+////function fn2(x: number, y: string): void { x; }
+////takesCb(fn2);
+////
+////function fn3(x: number, y: string): void { y; }
+////takesCb(fn3);
+////
+////x => {
+////    const y = 0;
+////};
+////
 ////{
 ////    let a, b;
 ////}
 ////for (let i = 0, j = 0; ;) {}
 ////for (const x of []) {}
 ////for (const y in {}) {}
+////
+////export type First<T, U> = T;
+////export interface ISecond<T, U> { u: U; }
+////export const cls = class<T, U> { u: U; };
+////export class Ctu<T, U> {}
+////export type Length<T> = T extends ArrayLike<infer U> ? number : never; // Not affected, can't delete
 
 verify.codeFixAll({
     fixId: "unusedIdentifier_delete",
-    fixAllDescription: "Delete all unused declarations",
+    fixAllDescription: ts.Diagnostics.Delete_all_unused_declarations.message,
     newFileContent:
 `import { used1 } from "foo";
 import { used2 } from "foo";
@@ -66,9 +85,27 @@ takesCb(() => {});
 takesCb((x) => { x; });
 takesCb((x, y) => { y; });
 
+function fn1(): void {}
+takesCb(fn1);
+
+function fn2(x: number): void { x; }
+takesCb(fn2);
+
+function fn3(x: number, y: string): void { y; }
+takesCb(fn3);
+
+() => {
+};
+
 {
 }
 for (; ;) {}
 for (const {} of []) {}
-for (const {} in {}) {}`,
+for (const {} in {}) {}
+
+export type First<T> = T;
+export interface ISecond<U> { u: U; }
+export const cls = class<U> { u: U; };
+export class Ctu {}
+export type Length<T> = T extends ArrayLike<infer U> ? number : never; // Not affected, can't delete`,
 });

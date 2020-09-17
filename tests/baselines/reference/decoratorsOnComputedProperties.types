@@ -1,9 +1,8 @@
 === tests/cases/compiler/decoratorsOnComputedProperties.ts ===
 function x(o: object, k: PropertyKey) { }
->x : (o: object, k: string | number | symbol) => void
+>x : (o: object, k: PropertyKey) => void
 >o : object
 >k : string | number | symbol
->PropertyKey : string | number | symbol
 
 let i = 0;
 >i : number

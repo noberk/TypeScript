@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "outFile": "../built/local/compositeExec.js",
+        "composite": true,
+        "declarationMap": true,
+        "bundledPackageName": "compositeExec"
+    },
+    "files": [
+        "index.ts"
+    ],
+    "references": [
+        { "path": "../lib", "prepend": true }
+    ]
+}

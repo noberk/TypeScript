@@ -10,22 +10,14 @@ export {
 };
 
 interface Hash<T> {
->Hash : Hash<T>
->T : T
-
     [key: string]: T;
 >key : string
->T : T
 }
 
 type StringHash = Hash<string>;
->StringHash : Hash<string>
->Hash : Hash<T>
+>StringHash : StringHash
 
 interface StringHash2 extends Hash<string> {}
->StringHash2 : StringHash2
->Hash : Hash<T>
-
 === tests/cases/compiler/a.ts ===
 import {StringHash, StringHash2} from "./b";
 >StringHash : any
@@ -33,12 +25,11 @@ import {StringHash, StringHash2} from "./b";
 
 export {
     doSome
->doSome : (arg1: string, arg2?: import("tests/cases/compiler/b").Hash<string>, arg3?: StringHash2) => void
+>doSome : (arg1: string, arg2?: StringHash, arg3?: StringHash2) => void
 }
 
 const MAP: StringHash = {
->MAP : import("tests/cases/compiler/b").Hash<string>
->StringHash : import("tests/cases/compiler/b").Hash<string>
+>MAP : StringHash
 >{    a: "a"} : { a: string; }
 
     a: "a"
@@ -49,7 +40,6 @@ const MAP: StringHash = {
 
 const MAP2: StringHash2 = {
 >MAP2 : StringHash2
->StringHash2 : StringHash2
 >{    a: "a"} : { a: string; }
 
     a: "a"
@@ -59,12 +49,12 @@ const MAP2: StringHash2 = {
 };
 
 function doSome(arg1: string,
->doSome : (arg1: string, arg2?: import("tests/cases/compiler/b").Hash<string>, arg3?: StringHash2) => void
+>doSome : (arg1: string, arg2?: StringHash, arg3?: StringHash2) => void
 >arg1 : string
 
                 arg2 = MAP,
->arg2 : import("tests/cases/compiler/b").Hash<string>
->MAP : import("tests/cases/compiler/b").Hash<string>
+>arg2 : StringHash
+>MAP : StringHash
 
                 arg3 = MAP2) {
 >arg3 : StringHash2
